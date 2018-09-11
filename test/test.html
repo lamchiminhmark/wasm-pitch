@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<!-- ASK ML Is it possible to not copy the js and wasm file into every folder?  -->
+<head>Test</head>
+<script>
+    alert("Check console!");
+    // Read test file
+    const rawFile = new XMLHttpRequest();
+    rawFile.open("GET", "/test.html", true);
+    rawFile.onload = () => {
+        if (rawFile.readyState === 4 && rawFile.status === 200 || rawFile.status == 0) {
+            const allText = rawFile.responseText;
+            console.log(allText);
+        }
+    }
+    var Module = {
+        onRuntimeInitialized: () => {
+            const get_pitch = Module.cwrap('get_pitch_mpm_c', 'number', ['number', 'number', 'number']);
+        }
+    }
+</script>
+<script src="wasm_interface.js"></script>
+
+</html>
