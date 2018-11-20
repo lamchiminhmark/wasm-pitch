@@ -13,7 +13,6 @@ var Module = {
 
   start: () => {
     navigator.mediaDevices.getUserMedia({ audio: true }).then(mediaStream => {
-        Module.mediaStream = mediaStream;
         const ctx = new AudioContext();
         const sourceNode = ctx.createMediaStreamSource(mediaStream);
         const bufferLength = 1024
@@ -24,7 +23,7 @@ var Module = {
           try {
             buffer = Module._malloc(pCMArray.byteLength);
             Module.HEAPF32.set(pCMArray, buffer >> 2);
-            const pitch = get_pitch_mpm_c(buffer, pCMArray.length, evt.inputBuffer.sampleRate);
+            const pitch = Module._get_pitch_mpm_c(buffer, pCMArray.length, evt.inputBuffer.sampleRate);
             callbacks.forEach(callback => callback(pitch));
           } catch (e) {
             throw e;
@@ -35,13 +34,14 @@ var Module = {
         sourceNode.connect(processorNode);
         // The audio signal chain has to be completed by connecting to a destination
         processorNode.connect(ctx.destination);
-    });
-  },
 
-  stop: () => {
-    // TODO ML check why the pitch the detection is lagging after many start/stops
-   Module.mediaStream.getTracks()[0].stop();
-  },
+        // ASK ML Is defining a property inside a property problematic? I had to do this because stop() needs to scope mediaStream and processorNode.
+        Module.stop = () => {
+          mediaStream.getTracks()[0].stop();
+          processorNode.disconnect();
+         };
+    });
+  },  
 
   addPitchListener: (callback) => {
     callbacks.push(callback);
@@ -52,6 +52,4 @@ var Module = {
     if (index === -1) return;
     callbacks.splice(index, 1);
   },
-
-  loadingPromise: new Promise((resolve, reject) => {})
 }

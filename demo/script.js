@@ -1,3 +1,5 @@
+import Module from './script'
+
 const callbacks = [];
 const index = 0;
 let resolvePromise;
@@ -18,7 +20,6 @@ var Module = {
         const bufferLength = 1024
         const processorNode = ctx.createScriptProcessor(bufferLength, 1, 1);
         processorNode.onaudioprocess = evt => {
-          console.log(`event fired`);
           const pCMArray = evt.inputBuffer.getChannelData(0);
           let buffer;
           try {
@@ -53,6 +54,4 @@ var Module = {
     if (index === -1) return;
     callbacks.splice(index, 1);
   },
-
-  loadingPromise: new Promise((resolve, reject) => {})
 }
