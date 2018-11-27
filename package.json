@@ -2,21 +2,17 @@
   "name": "wasm-pitch",
   "version": "1.0.0",
   "description": "Monophonic pitch detection API for Javascript using WASM",
-  // TODO ML find out what this main is for
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    // TODO ML make 
     "build": "",
     "start": "http-server"
   },
   "dev-dependencies": {
-    // TODO ML Check stable version for deps
     "http-server": "@stable"
   },
   "repository": {
     "type": "git",
-    // LATER ML Change the github name to this
     "url": "git+https://github.com/lamchiminhmark/wasm-pitch-detection.git"
   },
   "keywords": [
