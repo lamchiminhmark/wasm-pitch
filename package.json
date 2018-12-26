@@ -8,7 +8,7 @@
     "build": "",
     "start": "http-server"
   },
-  "dev-dependencies": {
+  "devDependencies": {
     "http-server": "@stable"
   },
   "repository": {
@@ -24,5 +24,9 @@
   "bugs": {
     "url": "https://github.com/lamchiminhmark/wasm-pitch-detection/issues"
   },
-  "homepage": "https://github.com/lamchiminhmark/wasm-pitch-detection#readme"
+  "homepage": "https://github.com/lamchiminhmark/wasm-pitch-detection#readme",
+  "dependencies": {
+    "express": "^4.16.4",
+    "fs": "0.0.1-security"
+  }
 }
