@@ -1,8 +1,7 @@
 const path = require('path');
-const fs = require('fs');
 
 module.exports = {
-    entry: path.resolve(__dirname, 'demo') +'/script.js',
+    entry: path.resolve(__dirname, 'demo') +'/app.js',
 
     output: {
         path: path.resolve(__dirname, 'demo'),

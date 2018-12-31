@@ -11,7 +11,6 @@ build:
 	@mkdir -p $(RELEASES)
 	emcc -std=c++11 -O3 --closure 1 -s MODULARIZE=1 -o wasm_interface.js $(SRCS) -s ASSERTIONS=1
 	mv "wasm_interface.js" "wasm_interface.wasm" $(RELEASES) 
-	# cp $(SRCDIR)/script.js $(RELEASES)
 	cp $(RELEASES)/wasm_interface.* ./test
 	cp $(RELEASES)/* ./demo
 
