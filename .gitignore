@@ -1,4 +1,6 @@
 
+#misc 
+/.vscode
 /releases
 /node_modules
 /httpServer*
