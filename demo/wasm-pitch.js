@@ -1,9 +1,6 @@
 import * as createModule from './wasm_interface.js';
 
-// TODO(ML): Convert to TS for easier maintenance
-
 export default class WasmPitch {
-  // It's impossible to use async/await for constructor
   constructor() {
     this.callbacks = [];
     // TODO(ML): Research if there is a better way to tell if an instance of the class has fully loaded.

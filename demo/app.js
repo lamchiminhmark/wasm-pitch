@@ -1,4 +1,4 @@
-import WasmPitch from './wasm-pitch';
+import WasmPitch from '../releases/wasm-pitch';
 
 const buttonEl = document.querySelector('#start');
 const pitchEl = document.querySelector('#pitch');
@@ -13,8 +13,6 @@ wasmPitch.loaded().then(() => {
   buttonEl.disabled = false;
   wasmPitch.addListener(setPitch);
   // Initialize the button element
-
-  // CONTINUE(ML): setPitch is being called regardless whether started or stopped
 
   buttonEl.onclick = () => {
     if (buttonEl.dataset.state === 'off') {

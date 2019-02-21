@@ -2,5 +2,4 @@
 #misc 
 /.vscode
 /releases
-/node_modules
-/httpServer*
+/node_moduleSs

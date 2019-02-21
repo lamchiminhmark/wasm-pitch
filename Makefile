@@ -14,12 +14,12 @@ build:
 	cp $(RELEASES)/wasm_interface.* ./test
 	cp $(RELEASES)/* ./demo
 
-build-dev:
-	emcc $(CXX_FLAGS) -o wasm_interface.wasm $(SRCS) -s ASSERTIONS=1 -s SIDE_MODULE=1 
-	cp "wasm_interface.wasm" ./demo
+# build-dev:
+# 	emcc $(CXX_FLAGS) -o wasm_interface.wasm $(SRCS) -s ASSERTIONS=1 -s SIDE_MODULE=1 
+# 	cp "wasm_interface.wasm" ./demo
 
 .PHONY : clean
 clean: 
-	rm -R $(RELEASES)
+	rm -R $(RELEASES)/wasm_interface.*
 	rm test/wasm_interface.*
 	rm demo/wasm_interface.* 

@@ -2,31 +2,35 @@
   "name": "wasm-pitch",
   "version": "0.1.0",
   "description": "Monophonic pitch detection API for Javascript using WASM",
-  "main": "index.js",
+  "main": "/releases/wasm-pitch.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "",
-    "start": "http-server"
-  },
-  "devDependencies": {
-    "http-server": "@stable"
+    "start": "http-server",
+    "watch": "webpack --watch"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lamchiminhmark/wasm-pitch-detection.git"
+    "url": "git+https://github.com/lamchiminhmark/wasm-pitch.git"
   },
   "keywords": [
     "pitch",
     "detection"
   ],
-  "author": "Minh Lam",
+  "author": "Minh Lam <lamchiminhmark@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/lamchiminhmark/wasm-pitch-detection/issues"
+    "url": "https://github.com/lamchiminhmark/wasm-pitch/issues"
   },
-  "homepage": "https://github.com/lamchiminhmark/wasm-pitch-detection#readme",
+  "homepage": "https://github.com/lamchiminhmark/wasm-pit#readme",
   "dependencies": {
     "express": "^4.16.4",
     "fs": "0.0.1-security"
+  },
+  "devDependencies": {
+    "file-loader": "^3.0.1",
+    "http-server": "^0.11.1",
+    "webpack": "^4.29.3",
+    "webpack-cli": "^3.2.3"
   }
 }
