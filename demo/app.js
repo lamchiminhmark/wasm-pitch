@@ -7,7 +7,7 @@ const setPitch = pitch => (pitchEl.innerText = pitch >= 0 ? pitch : '__');
 // Is it possible for the function to be static?
 // Let's go with non-static => Have to instantiate a wasm-pitch instance to use its functionality
 // wasmPitch has to be a class
-const wasmPitch = new WasmPitch();
+const wasmPitch = new WasmPitch('../assets');
 wasmPitch.addListener(setPitch);
 wasmPitch.loaded().then(() => {
   buttonEl.disabled = false;

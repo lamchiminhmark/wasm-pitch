@@ -14,16 +14,4 @@ module.exports = {
 
   mode: 'development',
   target: 'node',
-  module: {
-    rules: [
-      {
-        test: /wasm_pitch\.wasm$/,
-        type: 'javascript/auto',
-        loader: 'file-loader',
-        options: {
-          publicPath: '../releases'
-        }
-      }
-    ]
-  }
 };
