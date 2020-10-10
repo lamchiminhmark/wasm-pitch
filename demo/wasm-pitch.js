@@ -1,15 +1,15 @@
 import * as createModule from './wasm_interface.js';
 
-// TODO(ML): Convert to TS for easier maintenance
-
 export default class WasmPitch {
-  // It's impossible to use async/await for constructor
-  constructor() {
+  constructor(prefixToWasm) {
     this.callbacks = [];
-    // TODO(ML): Research if there is a better way to tell if an instance of the class has fully loaded.
-    // Currently, I'm using a loadingPromise object to tell if the class has loaded the module object.
     this.mediaStream;
+    /** This instance's AudioContext */
+    this.audioContext;
     this.processorNode;
+    /** Internal wasm load state */
+    this.isLoaded = false;
+
     this.loadingPromise = new Promise((resolve, reject) => {
       this.moduleObj = {
         onRuntimeInitialized: () => {
@@ -18,37 +18,41 @@ export default class WasmPitch {
 
         onAbort: () => {
           reject('Loading of wasm-pitch aborted');
+        },
+
+        locateFile: () => {
+          // WANT: Resolve modules instead of concatting strings
+          return prefixToWasm + '/wasm_interface.wasm';
         }
       };
     });
 
+    // Initialises the module object on top of the existing this.moduleObj
     createModule(this.moduleObj);
   }
 
   /**
-   * Starts the pitch dictation machinery
+   *  **MUST BE CALLED FIRST**: returns true if wasm module has been loaded, rejects if module loader throws error
    */
-  async start() {
-
-    // Check that the wasm Module object is fully loaded
-    try {
-      await this.loaded();
-    } catch (e) {
-      throw e;
+  async init({sourceNode} = {}) {
+    this.audioContext = sourceNode ? sourceNode.context : new AudioContext();
+    if (!sourceNode) {
+      // Get the media stream from client's microphone using the WebRTC API
+      try {
+        this.mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio: true
+        });
+      } catch (e) {
+        throw e;
+      }
+      this.sourceNode = this.audioContext.createMediaStreamSource(this.mediaStream);
+    } else {
+      this.sourceNode = sourceNode;
     }
 
-    // Get the media stream from client's microphone using the WebRTC API
-    try {
-      this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (e) {
-      throw e;
-    }
-
-    // Set up the audio processing using WebAudio API
-    const ctx = new AudioContext();
-    const sourceNode = ctx.createMediaStreamSource(this.mediaStream);
+    // Set up the audio processing using AudioProcessorNode API
     const bufferLength = 1024;
-    this.processorNode = ctx.createScriptProcessor(bufferLength, 1, 1);
+    this.processorNode = this.audioContext.createScriptProcessor(bufferLength, 1, 1);
     this.processorNode.onaudioprocess = evt => {
       const pCMArray = evt.inputBuffer.getChannelData(0);
       let buffer;
@@ -67,38 +71,60 @@ export default class WasmPitch {
         this.moduleObj._free(buffer);
       }
     };
-    sourceNode.connect(this.processorNode);
-    // The audio signal chain has to be completed by connecting to a destination
-    this.processorNode.connect(ctx.destination);
+
+    try {
+      await this.loadingPromise;
+      this.isLoaded = true;
+      return true;
+    } catch (e) {
+      throw e;
+    }    
+  }
+
+  /** 
+   * Gets the AudioContext being used
+   */
+  getAudioContext() {
+    return this.audioContext;
   }
 
   /**
-   *  Resolves when the wasm module has been loaded, rejects if module loader throws error  
+   * 
    */
-  async loaded() {
-    try {
-      await this.loadingPromise;
-      return;
-    } catch (e) {
-      throw e;
-    }
+  loaded() {
+    return 
+  }
+
+  /**
+   * Starts the pitch dictation machinery
+   */
+  async start() {
+    
+    this.sourceNode.connect(this.processorNode);
+    // The audio signal chain has to be completed by connecting to a destination
+    this.processorNode.connect(this.audioContext.destination);
   }
 
   /**
    * Stops the pitch detection machinery
    */
   stop() {
-    if (!this.mediaStream || !this.processorNode) throw Error('start() has not been called');
-    
-    this.mediaStream.getTracks()[0].stop();
+    if (!this.processorNode) throw Error('start() has not been called');
+
+    if (this.mediaStream) this.mediaStream.getTracks()[0].stop();
     this.processorNode.disconnect();
   }
 
+  /**
+   * Add callbacks that are called whenever a frequency is dictated
+   * @param {(freq: number) => any} callback argument freq is -1 when input is so soft that 
+   * a pitch cannot be detected
+   */
   addListener(callback) {
     this.callbacks.push(callback);
   }
 
-  removePitchListener(callback) {
+  removeListener(callback) {
     const index = this.callbacks.indexOf(callback);
     if (index === -1) return;
     callbacks.splice(index, 1);
