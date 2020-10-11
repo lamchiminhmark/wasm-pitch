@@ -12,3 +12,8 @@
 
 ## Demo
 Check out the demo directory
+
+## Build Instructions
+1. You will need to download & install [Emscripten](https://emscripten.org/docs/getting_started/downloads.html) if you don't have it installed already. (On Mac, `brew install emscripten`.)
+2. Then run `make` from the root directory.
+
