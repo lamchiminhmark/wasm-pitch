@@ -2,7 +2,7 @@
   "name": "wasm-pitch",
   "version": "1.0.0",
   "description": "Monophonic pitch detection API for Javascript using WASM",
-  "main": "index.js",
+  "main": "/releases/wasm-pitch.js",
   "types": "types/index.d.ts",
   "scripts": {
     "test": "karma start",
