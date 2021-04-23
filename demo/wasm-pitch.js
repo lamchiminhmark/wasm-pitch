@@ -1,7 +1,10 @@
 import * as createModule from './wasm_interface.js';
 
+console.log('createModule', createModule);
+
 export default class WasmPitch {
-  constructor(prefixToWasm) {
+  constructor(prefixToWasm = '') {
+    console.log("WasmPitch instance", this);
     this.callbacks = [];
     this.mediaStream;
     /** This instance's AudioContext */

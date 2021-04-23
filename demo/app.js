@@ -9,7 +9,7 @@ const setPitch = pitch => (pitchEl.innerText = pitch >= 0 ? pitch : '__');
 // wasmPitch has to be a class
 const wasmPitch = new WasmPitch();
 wasmPitch.addListener(setPitch);
-wasmPitch.loaded().then(() => {
+wasmPitch.loadingPromise.then(() => {
   buttonEl.disabled = false;
   wasmPitch.addListener(setPitch);
   // Initialize the button element
@@ -20,11 +20,12 @@ wasmPitch.loaded().then(() => {
     if (buttonEl.dataset.state === 'off') {
       buttonEl.innerText = 'Stop';
       buttonEl.dataset.state = 'on';
-      wasmPitch.start();
+      wasmPitch.init().then(() => wasmPitch.start());
     } else {
       buttonEl.innerText = 'Start';
       buttonEl.dataset.state = 'off';
       wasmPitch.stop();
     }
   };
-});
+})
+.catch(err => console.error(err));
