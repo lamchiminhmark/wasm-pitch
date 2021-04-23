@@ -2,28 +2,32 @@
   "name": "wasm-pitch",
   "version": "1.0.0",
   "description": "Monophonic pitch detection API for Javascript using WASM",
-  "main": "/releases/wasm-pitch.js",
-  "types": "types/index.d.ts",
+  "main": "/releases/index.js",
+  "types": "/releases/src/index.d.ts",
   "scripts": {
     "test": "karma start",
-    "build": "",
-    "start": "http-server",
-    "watch": "webpack --watch"
+    "build": "make",
+    "webpack": "webpack",
+    "demo": "webpack serve --config ./demo.webpack.config.js"
   },
   "devDependencies": {
+    "@types/emscripten": "^1.39.4",
+    "babel-loader": "^5.0.0",
     "express": "^4.16.4",
     "file-loader": "^3.0.1",
     "fs": "0.0.1-security",
-    "http-server": "@stable",
+    "http-server": "^0.12.3",
     "jasmine": "^3.4.0",
-    "webpack": "^4.29.3",
-    "webpack-cli": "^3.2.3",
-    "babel-loader": "^5.0.0",
     "jasmine-core": "^2.2.0",
     "karma": "^0.13.2",
     "karma-jasmine": "^0.3.5",
     "karma-phantomjs-launcher": "^0.1.4",
-    "karma-webpack": "^1.6.0"
+    "karma-webpack": "^1.6.0",
+    "ts-loader": "^9.1.0",
+    "typescript": "^4.2.4",
+    "webpack": "^5.35.0",
+    "webpack-cli": "^4.6.0",
+    "webpack-dev-server": "^3.11.2"
   },
   "repository": {
     "type": "git",

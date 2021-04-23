@@ -13,8 +13,7 @@ build:
 	emcc -std=c++11 -O3 --closure 1 -s MODULARIZE=1 -s EXPORT_NAME="'WasmPitch'" -o wasm_interface.js $(SRCS) -s ASSERTIONS=1
 	mv "wasm_interface.js" "wasm_interface.wasm" $(RELEASES) 
 	cp $(RELEASES)/wasm_interface.* ./test
-	cp $(RELEASES)/* ./demo
-	cp $(SRCDIR)/wasm-pitch.js $(RELEASES)/wasm-pitch.js
+	npm run webpack
 
 build-dev:
 	emcc $(CXX_FLAGS) -o wasm_interface.wasm $(SRCS) -s ASSERTIONS=1 -s SIDE_MODULE=1 
