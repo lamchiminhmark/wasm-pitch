@@ -1,4 +1,4 @@
-import WasmPitch from './wasm-pitch';
+import WasmPitch from '../releases/wasm-pitch';
 
 const buttonEl = document.querySelector('#start');
 const pitchEl = document.querySelector('#pitch');
@@ -7,7 +7,7 @@ const setPitch = pitch => (pitchEl.innerText = pitch >= 0 ? pitch : '__');
 // Is it possible for the function to be static?
 // Let's go with non-static => Have to instantiate a wasm-pitch instance to use its functionality
 // wasmPitch has to be a class
-const wasmPitch = new WasmPitch();
+const wasmPitch = new WasmPitch('/releases');
 wasmPitch.addListener(setPitch);
 wasmPitch.loadingPromise.then(() => {
   buttonEl.disabled = false;
