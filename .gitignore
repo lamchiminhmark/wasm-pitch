@@ -1,2 +1,3 @@
 node_modules
 /httpServer*
+.DS_Store
