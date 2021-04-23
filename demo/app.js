@@ -1,4 +1,4 @@
-import WasmPitch from '../releases/wasm-pitch';
+import WasmPitch from '../releases/index.js';
 
 const buttonEl = document.querySelector('#start');
 const pitchEl = document.querySelector('#pitch');

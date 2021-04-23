@@ -1,7 +1,5 @@
 import * as createModule from '../releases/wasm_interface.js';
 
-console.log('createModule', createModule);
-
 interface WasmPitchModule extends EmscriptenModule {
   _get_pitch_mpm_c(samplesPointer: number, sampleSize: number, sampleRate: number): number;
 }
@@ -33,7 +31,6 @@ export default class WasmPitch {
   private loadingPromise: Promise<void>;
 
   constructor(pathToWasm: string = '') {
-    console.log("WasmPitch instance", this);
     this.initWasm(pathToWasm);
   }
 
