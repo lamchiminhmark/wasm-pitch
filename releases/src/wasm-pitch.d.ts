@@ -1,4 +1,13 @@
+/**
+ * Configuration settings for user media.
+ */
+export interface WasmPitchMediaTrackConstraints {
+    autoGainControl?: boolean;
+    echoCancellation?: boolean;
+    noiseSuppression?: boolean;
+}
 export default class WasmPitch {
+    private mediaTrackConstraints;
     private callbacks;
     private mediaStream;
     /** This instance's AudioContext */
@@ -15,7 +24,7 @@ export default class WasmPitch {
     private sourceNode;
     private moduleObj;
     private loadingPromise;
-    constructor(pathToWasm?: string);
+    constructor(pathToWasm?: string, mediaTrackConstraints?: WasmPitchMediaTrackConstraints);
     private initWasm;
     /**
      * Initialize audio from a source or, if none is provided, by requesting

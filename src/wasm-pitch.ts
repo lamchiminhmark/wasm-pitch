@@ -4,6 +4,16 @@ interface WasmPitchModule extends EmscriptenModule {
   _get_pitch_mpm_c(samplesPointer: number, sampleSize: number, sampleRate: number): number;
 }
 
+// This is equivalent to: Partial<Pick<MediaTrackConstraints, 'autoGainControl' | 'echoCancellation' | 'noiseSuppression'>>
+/**
+ * Configuration settings for user media.
+ */
+export interface WasmPitchMediaTrackConstraints {
+  autoGainControl?: boolean;
+  echoCancellation?: boolean;
+  noiseSuppression?: boolean;
+}
+
 export default class WasmPitch {
   private callbacks: ((freq: number) => void)[] = [];
 
@@ -30,7 +40,7 @@ export default class WasmPitch {
 
   private loadingPromise: Promise<void>;
 
-  constructor(pathToWasm: string = '') {
+  constructor(pathToWasm: string = '', private mediaTrackConstraints: WasmPitchMediaTrackConstraints = {}) {
     this.initWasm(pathToWasm);
   }
 
@@ -71,7 +81,7 @@ export default class WasmPitch {
       const audioContext = new AudioContext();
       // Get the media stream from client's microphone using the WebRTC API
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
-        audio: true
+        audio: this.mediaTrackConstraints
       });
       this.sourceNode = audioContext.createMediaStreamSource(this.mediaStream);
       this.audioContext = audioContext;
