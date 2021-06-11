@@ -47,6 +47,10 @@ export default class WasmPitch {
    */
   private filterNodes: BiquadFilterNode[] = [];
 
+  public get filteredNode() {
+    return this.filterNodes.length ? this.filterNodes[this.filterNodes.length - 1] : this.sourceNode;
+  }
+
   /**
    * Has the wasm pitch instance been started?
    */
@@ -58,7 +62,7 @@ export default class WasmPitch {
   /** Is the audio initialized? */
   public isAudioInitialized = false;
 
-  private sourceNode: MediaStreamAudioSourceNode;
+  public sourceNode: MediaStreamAudioSourceNode;
 
   private moduleObj: WasmPitchModule;
 

@@ -36,6 +36,7 @@ export default class WasmPitch {
      * Used if lowCutFrequencyHz or highCutFrequencyHz present in options.
      */
     private filterNodes;
+    get filteredNode(): BiquadFilterNode | MediaStreamAudioSourceNode;
     /**
      * Has the wasm pitch instance been started?
      */
