@@ -4,7 +4,6 @@ interface WasmPitchModule extends EmscriptenModule {
   _get_pitch_mpm_c(samplesPointer: number, sampleSize: number, sampleRate: number): number;
 }
 
-// This is equivalent to: Partial<Pick<MediaTrackConstraints, 'autoGainControl' | 'echoCancellation' | 'noiseSuppression'>>
 /**
  * Configuration settings for user media.
  */
@@ -12,6 +11,21 @@ export interface WasmPitchMediaTrackConstraints {
   autoGainControl?: boolean;
   echoCancellation?: boolean;
   noiseSuppression?: boolean;
+  /**
+   * When present, applies a low cut filter to everything below
+   * the specified frequency.
+   */
+  lowCutFrequencyHz?: number;
+  /**
+   * When present, applies a high cut filter to everything below
+   * the specified frequency.
+   */
+  highCutFrequencyHz?: number;
+  /**
+   * 0-1, default 1. How steep the cutoff is at the band pass/cut frequencies.
+   * Only has an effect if lowCutFrequencyHz or highCutFrequencyHz are present.
+   */
+  filterQualityFactor?: number;
 }
 
 export default class WasmPitch {
@@ -28,6 +42,11 @@ export default class WasmPitch {
    */
   private processorNode: ScriptProcessorNode;
 
+  /**
+   * Used if lowCutFrequencyHz or highCutFrequencyHz present in options.
+   */
+  private filterNodes: BiquadFilterNode[] = [];
+
   /** Internal wasm load state */
   private isLoaded = false;
 
@@ -40,7 +59,7 @@ export default class WasmPitch {
 
   private loadingPromise: Promise<void>;
 
-  constructor(pathToWasm: string = '', private mediaTrackConstraints: WasmPitchMediaTrackConstraints = {}) {
+  constructor(pathToWasm: string = '', private mediaTrackOptions: WasmPitchMediaTrackConstraints = {}) {
     this.initWasm(pathToWasm);
   }
 
@@ -81,10 +100,12 @@ export default class WasmPitch {
       const audioContext = new AudioContext();
       // Get the media stream from client's microphone using the WebRTC API
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
-        audio: this.mediaTrackConstraints
+        audio: this.mediaTrackOptions
       });
+
       this.sourceNode = audioContext.createMediaStreamSource(this.mediaStream);
       this.audioContext = audioContext;
+      this.createFilterNodes();
     }
 
     // Set up the audio processing using AudioProcessorNode API
@@ -118,6 +139,26 @@ export default class WasmPitch {
     }    
   }
 
+  private createFilterNodes() {
+    if (!this.mediaTrackOptions.lowCutFrequencyHz && !this.mediaTrackOptions.highCutFrequencyHz) return;
+
+    if (this.mediaTrackOptions.lowCutFrequencyHz) {
+      const filterNode = this.audioContext.createBiquadFilter();
+      filterNode.type = 'highpass';
+      filterNode.frequency.value = this.mediaTrackOptions.lowCutFrequencyHz;
+      filterNode.Q.value = this.mediaTrackOptions.filterQualityFactor || 1;
+      this.filterNodes.push(filterNode);
+    }
+
+    if (this.mediaTrackOptions.highCutFrequencyHz) {
+      const filterNode = this.audioContext.createBiquadFilter();
+      filterNode.type = 'lowpass';
+      filterNode.frequency.value = this.mediaTrackOptions.highCutFrequencyHz;
+      filterNode.Q.value = this.mediaTrackOptions.filterQualityFactor || 1;
+      this.filterNodes.push(filterNode);
+    }
+  }
+
   /** 
    * Gets the AudioContext being used
    */
@@ -130,9 +171,13 @@ export default class WasmPitch {
    */
   start() {
     if (!this.isLoaded || !this.isAudioInitialized) throw Error('Must await WasmPitch.init() before calling start.');
-    this.sourceNode.connect(this.processorNode);
-    // The audio signal chain has to be completed by connecting to a destination
-    this.processorNode.connect(this.audioContext.destination);
+    const signalChain = [
+      this.sourceNode,
+      ...this.filterNodes,
+      this.processorNode,
+      this.audioContext.destination,
+    ];
+    signalChain.reduce((a, b) => { a.connect(b); return b });
   }
 
   /**
@@ -143,7 +188,13 @@ export default class WasmPitch {
     if (!this.processorNode) throw Error('start() has not been called');
 
     if (this.mediaStream) this.mediaStream.getTracks()[0].stop();
-    this.processorNode.disconnect();
+    const signalChain = [
+      this.sourceNode,
+      ...this.filterNodes,
+      this.processorNode,
+      this.audioContext.destination,
+    ];
+    signalChain.forEach(node => node.disconnect());
   }
 
   /**

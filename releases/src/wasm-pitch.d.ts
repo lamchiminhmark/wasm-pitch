@@ -5,9 +5,24 @@ export interface WasmPitchMediaTrackConstraints {
     autoGainControl?: boolean;
     echoCancellation?: boolean;
     noiseSuppression?: boolean;
+    /**
+     * When present, applies a low cut filter to everything below
+     * the specified frequency.
+     */
+    lowCutFrequencyHz?: number;
+    /**
+     * When present, applies a high cut filter to everything below
+     * the specified frequency.
+     */
+    highCutFrequencyHz?: number;
+    /**
+     * 0-1, default 1. How steep the cutoff is at the band pass/cut frequencies.
+     * Only has an effect if lowCutFrequencyHz or highCutFrequencyHz are present.
+     */
+    filterQualityFactor?: number;
 }
 export default class WasmPitch {
-    private mediaTrackConstraints;
+    private mediaTrackOptions;
     private callbacks;
     private mediaStream;
     /** This instance's AudioContext */
@@ -17,6 +32,10 @@ export default class WasmPitch {
      * on until Safari decides to support worklets.
      */
     private processorNode;
+    /**
+     * Used if lowCutFrequencyHz or highCutFrequencyHz present in options.
+     */
+    private filterNodes;
     /** Internal wasm load state */
     private isLoaded;
     /** Is the audio initialized? */
@@ -24,7 +43,7 @@ export default class WasmPitch {
     private sourceNode;
     private moduleObj;
     private loadingPromise;
-    constructor(pathToWasm?: string, mediaTrackConstraints?: WasmPitchMediaTrackConstraints);
+    constructor(pathToWasm?: string, mediaTrackOptions?: WasmPitchMediaTrackConstraints);
     private initWasm;
     /**
      * Initialize audio from a source or, if none is provided, by requesting
@@ -34,6 +53,7 @@ export default class WasmPitch {
      * @param sourceNode
      */
     init(sourceNode?: MediaStreamAudioSourceNode): Promise<this>;
+    private createFilterNodes;
     /**
      * Gets the AudioContext being used
      */
