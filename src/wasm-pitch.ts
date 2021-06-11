@@ -47,11 +47,16 @@ export default class WasmPitch {
    */
   private filterNodes: BiquadFilterNode[] = [];
 
+  /**
+   * Has the wasm pitch instance been started?
+   */
+  public isRunning = false;
+
   /** Internal wasm load state */
   private isLoaded = false;
 
   /** Is the audio initialized? */
-  private isAudioInitialized = false;
+  public isAudioInitialized = false;
 
   private sourceNode: MediaStreamAudioSourceNode;
 
@@ -179,12 +184,14 @@ export default class WasmPitch {
     ];
     console.log('signal chain', signalChain);
     signalChain.reduce((a, b) => { a.connect(b); return b });
+    this.isRunning = true;
   }
 
   /**
    * Stops the pitch detection machinery
    */
   stop() {
+    this.isRunning = false;
     if (!this.isLoaded || !this.isAudioInitialized) throw Error('Must await WasmPitch.init() before calling stop.');
     if (!this.processorNode) throw Error('start() has not been called');
 

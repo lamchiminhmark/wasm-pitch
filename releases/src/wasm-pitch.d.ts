@@ -36,10 +36,14 @@ export default class WasmPitch {
      * Used if lowCutFrequencyHz or highCutFrequencyHz present in options.
      */
     private filterNodes;
+    /**
+     * Has the wasm pitch instance been started?
+     */
+    isRunning: boolean;
     /** Internal wasm load state */
     private isLoaded;
     /** Is the audio initialized? */
-    private isAudioInitialized;
+    isAudioInitialized: boolean;
     private sourceNode;
     private moduleObj;
     private loadingPromise;
