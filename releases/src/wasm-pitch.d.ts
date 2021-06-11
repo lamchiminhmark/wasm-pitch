@@ -45,7 +45,7 @@ export default class WasmPitch {
     private isLoaded;
     /** Is the audio initialized? */
     isAudioInitialized: boolean;
-    private sourceNode;
+    sourceNode: MediaStreamAudioSourceNode;
     private moduleObj;
     private loadingPromise;
     constructor(pathToWasm?: string, mediaTrackOptions?: WasmPitchMediaTrackConstraints);
