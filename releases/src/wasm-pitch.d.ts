@@ -11,7 +11,7 @@ export interface WasmPitchMediaTrackConstraints {
      */
     lowCutFrequencyHz?: number;
     /**
-     * When present, applies a high cut filter to everything below
+     * When present, applies a high cut filter to everything above
      * the specified frequency.
      */
     highCutFrequencyHz?: number;

@@ -17,7 +17,7 @@ export interface WasmPitchMediaTrackConstraints {
    */
   lowCutFrequencyHz?: number;
   /**
-   * When present, applies a high cut filter to everything below
+   * When present, applies a high cut filter to everything above
    * the specified frequency.
    */
   highCutFrequencyHz?: number;
@@ -177,6 +177,7 @@ export default class WasmPitch {
       this.processorNode,
       this.audioContext.destination,
     ];
+    console.log('signal chain', signalChain);
     signalChain.reduce((a, b) => { a.connect(b); return b });
   }
 
