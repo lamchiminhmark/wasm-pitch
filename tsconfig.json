@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "outDir": "./releases",
+    "noImplicitAny": true,
+    "module": "es6",
+    "target": "es6",
+    "allowJs": true,
+    "declaration": true,
+    "declarationMap": true,
+  }
+}
