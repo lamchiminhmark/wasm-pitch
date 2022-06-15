@@ -112,6 +112,8 @@ get_pitch_mpm(const std::vector<double> &data, int sample_rate)
     if (estimates.empty())
         return -1;
 
+    // MPM_CUTOFF is a constant coefficient to avoid spurious peaks
+    // See McLeod (2005), p. 11, Section 5: Peak Picking
     double actual_cutoff = MPM_CUTOFF * highest_amplitude;
     double period = 0;
 

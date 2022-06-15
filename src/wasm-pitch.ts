@@ -1,4 +1,3 @@
-import * as createModule from '../releases/wasm_interface.js';
 
 interface WasmPitchModule extends EmscriptenModule {
   _get_pitch_mpm_c(samplesPointer: number, sampleSize: number, sampleRate: number): number;
@@ -74,6 +73,8 @@ export default class WasmPitch {
 
   private async initWasm(pathToWasm: string) {
     this.loadingPromise = new Promise(async (resolve, reject) => {
+      const createModule = await import('../releases/wasm_interface.js');
+
       // Initialises the module object on top of the existing this.moduleObj
       this.moduleObj = await (createModule as EmscriptenModuleFactory<WasmPitchModule>)({
         onRuntimeInitialized: () => {
