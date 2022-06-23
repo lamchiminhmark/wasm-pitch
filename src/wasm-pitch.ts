@@ -75,6 +75,9 @@ export default class WasmPitch {
     this.loadingPromise = new Promise(async (resolve, reject) => {
       const createModule = await import('../releases/wasm_interface.js');
 
+      console.log({ createModule });
+      console.dir(createModule, { depth: Infinity });
+
       // Initialises the module object on top of the existing this.moduleObj
       this.moduleObj = await (createModule as EmscriptenModuleFactory<WasmPitchModule>)({
         onRuntimeInitialized: () => {

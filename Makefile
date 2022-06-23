@@ -10,7 +10,7 @@ RELEASES := ./releases
 
 build:
 	@mkdir -p $(RELEASES)
-	emcc -std=c++11 -O3 --closure 1 -s MODULARIZE=1 -s EXPORT_NAME="'WasmPitch'" -o wasm_interface.js $(SRCS) -s ASSERTIONS=1
+	emcc -std=c++11 -O3 --closure 1 -s MODULARIZE=1 -s FILESYSTEM=0 -s EXPORT_NAME="'WasmPitch'" -o wasm_interface.js $(SRCS) -s ASSERTIONS=1
 	mv "wasm_interface.js" "wasm_interface.wasm" $(RELEASES) 
 	cp $(RELEASES)/wasm_interface.* ./test
 	npm run webpack
