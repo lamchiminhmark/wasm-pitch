@@ -34,6 +34,7 @@ acorr_r(const std::vector<double> &signal)
     return nsdf;
 }
 
+// Pick all local peaks in the nsdf
 static std::vector<int>
 peak_picking(const std::vector<double> &nsdf)
 {
@@ -42,6 +43,7 @@ peak_picking(const std::vector<double> &nsdf)
     int cur_max_pos = 0;
     ssize_t size = nsdf.size();
 
+    // Advance the position to the first upwards bound zero crossing:
     while (pos < (size - 1) / 3 && nsdf[pos] > 0)
         pos++;
     while (pos < size - 1 && nsdf[pos] <= 0.0)
@@ -52,12 +54,15 @@ peak_picking(const std::vector<double> &nsdf)
 
     while (pos < size - 1)
     {
+        // If current pos is a peak
         if (nsdf[pos] > nsdf[pos - 1] && nsdf[pos] >= nsdf[pos + 1])
         {
+            // Set this to the current max pos if we haven't set one previously:
             if (cur_max_pos == 0)
             {
                 cur_max_pos = pos;
             }
+            // Or, set this to the current max pos if it's bigger than our prior:
             else if (nsdf[pos] > nsdf[cur_max_pos])
             {
                 cur_max_pos = pos;
@@ -107,6 +112,8 @@ get_pitch_mpm(const std::vector<double> &data, int sample_rate)
     if (estimates.empty())
         return -1;
 
+    // MPM_CUTOFF is a constant coefficient to avoid spurious peaks
+    // See McLeod (2005), p. 11, Section 5: Peak Picking
     double actual_cutoff = MPM_CUTOFF * highest_amplitude;
     double period = 0;
 

@@ -21,7 +21,9 @@ module.exports = {
   output: {
     filename: 'index.js',
     path: path.resolve(__dirname, 'releases'),
+    publicPath: './releases',
     library: 'WasmPitch',
     libraryTarget: 'umd',
   },
+  mode: 'production',
 };

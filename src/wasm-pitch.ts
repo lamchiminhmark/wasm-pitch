@@ -1,10 +1,9 @@
-import * as createModule from '../releases/wasm_interface.js';
+import WasmPitchModule from '../releases/wasm_interface';
 
 interface WasmPitchModule extends EmscriptenModule {
   _get_pitch_mpm_c(samplesPointer: number, sampleSize: number, sampleRate: number): number;
 }
 
-// This is equivalent to: Partial<Pick<MediaTrackConstraints, 'autoGainControl' | 'echoCancellation' | 'noiseSuppression'>>
 /**
  * Configuration settings for user media.
  */
@@ -12,6 +11,21 @@ export interface WasmPitchMediaTrackConstraints {
   autoGainControl?: boolean;
   echoCancellation?: boolean;
   noiseSuppression?: boolean;
+  /**
+   * When present, applies a low cut filter to everything below
+   * the specified frequency.
+   */
+  lowCutFrequencyHz?: number;
+  /**
+   * When present, applies a high cut filter to everything above
+   * the specified frequency.
+   */
+  highCutFrequencyHz?: number;
+  /**
+   * 0-1, default 1. How steep the cutoff is at the band pass/cut frequencies.
+   * Only has an effect if lowCutFrequencyHz or highCutFrequencyHz are present.
+   */
+  filterQualityFactor?: number;
 }
 
 export default class WasmPitch {
@@ -28,32 +42,51 @@ export default class WasmPitch {
    */
   private processorNode: ScriptProcessorNode;
 
+  /**
+   * Used if lowCutFrequencyHz or highCutFrequencyHz present in options.
+   */
+  private filterNodes: BiquadFilterNode[] = [];
+
+  public get filteredNode() {
+    return this.filterNodes.length ? this.filterNodes[this.filterNodes.length - 1] : this.sourceNode;
+  }
+
+  /**
+   * Has the wasm pitch instance been started?
+   */
+  public isRunning = false;
+
   /** Internal wasm load state */
   private isLoaded = false;
 
   /** Is the audio initialized? */
-  private isAudioInitialized = false;
+  public isAudioInitialized = false;
 
-  private sourceNode: MediaStreamAudioSourceNode;
+  public sourceNode: MediaStreamAudioSourceNode;
 
-  private moduleObj: WasmPitchModule;
+  private moduleObj: WasmPitchModule | undefined;
 
   private loadingPromise: Promise<void>;
 
-  constructor(pathToWasm: string = '', private mediaTrackConstraints: WasmPitchMediaTrackConstraints = {}) {
+  constructor(pathToWasm: string = '', private mediaTrackOptions: WasmPitchMediaTrackConstraints = {}) {
     this.initWasm(pathToWasm);
   }
 
   private async initWasm(pathToWasm: string) {
     this.loadingPromise = new Promise(async (resolve, reject) => {
+      const createModule = await import('../releases/wasm_interface.js');
+
+      console.log({ createModule });
+      console.dir(createModule, { depth: Infinity });
+
       // Initialises the module object on top of the existing this.moduleObj
-      this.moduleObj = await (createModule as EmscriptenModuleFactory<WasmPitchModule>)({
+      this.moduleObj = await WasmPitchModule({
         onRuntimeInitialized: () => {
           this.isLoaded = true;
           resolve();
         },
 
-        onAbort: (err) => {
+        onAbort: (err: any) => {
           reject('Loading of wasm-pitch aborted');
           console.error(err);
         },
@@ -63,6 +96,7 @@ export default class WasmPitch {
           return pathToWasm + '/wasm_interface.wasm';
         }
       });
+      console.log("module object", this.moduleObj);
     });
   }
 
@@ -81,10 +115,12 @@ export default class WasmPitch {
       const audioContext = new AudioContext();
       // Get the media stream from client's microphone using the WebRTC API
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
-        audio: this.mediaTrackConstraints
+        audio: this.mediaTrackOptions
       });
+
       this.sourceNode = audioContext.createMediaStreamSource(this.mediaStream);
       this.audioContext = audioContext;
+      this.createFilterNodes();
     }
 
     // Set up the audio processing using AudioProcessorNode API
@@ -118,6 +154,26 @@ export default class WasmPitch {
     }    
   }
 
+  private createFilterNodes() {
+    if (!this.mediaTrackOptions.lowCutFrequencyHz && !this.mediaTrackOptions.highCutFrequencyHz) return;
+
+    if (this.mediaTrackOptions.lowCutFrequencyHz) {
+      const filterNode = this.audioContext.createBiquadFilter();
+      filterNode.type = 'highpass';
+      filterNode.frequency.value = this.mediaTrackOptions.lowCutFrequencyHz;
+      filterNode.Q.value = this.mediaTrackOptions.filterQualityFactor || 1;
+      this.filterNodes.push(filterNode);
+    }
+
+    if (this.mediaTrackOptions.highCutFrequencyHz) {
+      const filterNode = this.audioContext.createBiquadFilter();
+      filterNode.type = 'lowpass';
+      filterNode.frequency.value = this.mediaTrackOptions.highCutFrequencyHz;
+      filterNode.Q.value = this.mediaTrackOptions.filterQualityFactor || 1;
+      this.filterNodes.push(filterNode);
+    }
+  }
+
   /** 
    * Gets the AudioContext being used
    */
@@ -130,20 +186,33 @@ export default class WasmPitch {
    */
   start() {
     if (!this.isLoaded || !this.isAudioInitialized) throw Error('Must await WasmPitch.init() before calling start.');
-    this.sourceNode.connect(this.processorNode);
-    // The audio signal chain has to be completed by connecting to a destination
-    this.processorNode.connect(this.audioContext.destination);
+    const signalChain = [
+      this.sourceNode,
+      ...this.filterNodes,
+      this.processorNode,
+      this.audioContext.destination,
+    ];
+    console.log('signal chain', signalChain);
+    signalChain.reduce((a, b) => { a.connect(b); return b });
+    this.isRunning = true;
   }
 
   /**
    * Stops the pitch detection machinery
    */
   stop() {
+    this.isRunning = false;
     if (!this.isLoaded || !this.isAudioInitialized) throw Error('Must await WasmPitch.init() before calling stop.');
     if (!this.processorNode) throw Error('start() has not been called');
 
     if (this.mediaStream) this.mediaStream.getTracks()[0].stop();
-    this.processorNode.disconnect();
+    const signalChain = [
+      this.sourceNode,
+      ...this.filterNodes,
+      this.processorNode,
+      this.audioContext.destination,
+    ];
+    signalChain.forEach(node => node.disconnect());
   }
 
   /**
