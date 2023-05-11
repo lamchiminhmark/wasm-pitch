@@ -1,3 +1,4 @@
+import WasmPitchModule from '../releases/wasm_interface';
 
 interface WasmPitchModule extends EmscriptenModule {
   _get_pitch_mpm_c(samplesPointer: number, sampleSize: number, sampleRate: number): number;
@@ -63,7 +64,7 @@ export default class WasmPitch {
 
   public sourceNode: MediaStreamAudioSourceNode;
 
-  private moduleObj: WasmPitchModule;
+  private moduleObj: WasmPitchModule | undefined;
 
   private loadingPromise: Promise<void>;
 
@@ -79,13 +80,13 @@ export default class WasmPitch {
       console.dir(createModule, { depth: Infinity });
 
       // Initialises the module object on top of the existing this.moduleObj
-      this.moduleObj = await (createModule as EmscriptenModuleFactory<WasmPitchModule>)({
+      this.moduleObj = await WasmPitchModule({
         onRuntimeInitialized: () => {
           this.isLoaded = true;
           resolve();
         },
 
-        onAbort: (err) => {
+        onAbort: (err: any) => {
           reject('Loading of wasm-pitch aborted');
           console.error(err);
         },
@@ -95,6 +96,7 @@ export default class WasmPitch {
           return pathToWasm + '/wasm_interface.wasm';
         }
       });
+      console.log("module object", this.moduleObj);
     });
   }
 
